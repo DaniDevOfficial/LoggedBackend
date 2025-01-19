@@ -2,10 +2,10 @@ Okay so basically its a Logging service. Its an api you can call from the backen
 
 ```json
 {
-    "severity": "High|Critical|Security......",¨
+    "severity": "High|Critical|Security......",
     "message": "Some random message",
     "request": {
-        "jsonObject of the request"
+        "jsonObject of the request": "data"
     },
     "userId": "UUID",
     "requestUrl": "url",
@@ -24,3 +24,4 @@ Also each severity has a lifetime, which can be set by the admins of the log ser
 
 This basic implementation will only manage a singular app, so you cant connect multible backends to the same log instance. each one has to get a new microservice as well as db. 
 
+There will be also a simple user system for the forntent to be able to know who is allowed to view the logs. 

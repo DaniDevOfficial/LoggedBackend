@@ -1,19 +1,19 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"loggedin/modules/logging"
+	"loggedin/utility/db"
 )
 
 func main() {
+	dbConnection := db.InitDB()
+	router := gin.Default()
 
-	r := gin.Default()
-	r.GET("/", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"message": "pong",
-		})
-	})
-	r.Run("localhost:8000")
+	logging.RegisterLoggingRoutes(router, dbConnection)
+
+	err := router.Run("localhost:8000")
+	if err != nil {
+		panic(123)
+	}
 }
