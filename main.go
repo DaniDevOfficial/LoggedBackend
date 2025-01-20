@@ -14,6 +14,6 @@ func main() {
 
 	err := router.Run("localhost:8000")
 	if err != nil {
-		panic(123)
+		panic("Startup went wrong")
 	}
 }

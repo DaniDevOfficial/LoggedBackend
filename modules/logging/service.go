@@ -6,6 +6,10 @@ import (
 	"net/http"
 )
 
+const HardLimitEntries = 500
+
+const DefaultLimitEntries = 50
+
 func CreateLogEntry(c *gin.Context, db *sql.DB) {
 
 	var newLogEntry NewLogEntry
@@ -28,4 +32,20 @@ func CreateLogEntry(c *gin.Context, db *sql.DB) {
 	}
 
 	c.JSON(http.StatusCreated, IdResponse{Id: id})
+}
+
+func GetFilteredLogEntriesWithLimit(c *gin.Context, db *sql.DB) {
+	var filters FilterLogEntryRequest
+	if err := c.ShouldBindQuery(&filters); err != nil {
+		c.JSON(http.StatusBadRequest, Error{Message: "Invalid Request Body"})
+		return
+	}
+
+	if filters.Limit == 0 {
+		filters.Limit = DefaultLimitEntries
+	}
+	if filters.Limit > HardLimitEntries {
+		filters.Limit = HardLimitEntries
+	}
+
 }
