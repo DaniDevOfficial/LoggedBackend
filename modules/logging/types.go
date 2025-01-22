@@ -20,7 +20,6 @@ type FilterLogEntryRequest struct {
 	UserIdFilter     string `json:"userIdFilter"`
 	RequestUrlFilter string `json:"requestUrlFilter"`
 	ResponseFilter   string `json:"responseFilter"`
-	LifeTimeFilter   string `json:"lifeTimeFilter"`
 	RequestKeyFilter string `json:"requestKeyFilter"`
 	StartDateFilter  string `json:"startDateFilter"`
 	EndDateFilter    string `json:"endDateFilter"`
