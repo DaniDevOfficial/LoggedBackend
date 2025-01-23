@@ -1,8 +1,8 @@
 package db
 
 import (
-	"database/sql"
 	"fmt"
+	"gorm.io/gorm"
 	"log"
 	"os"
 
@@ -10,7 +10,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func InitDB() *sql.DB {
+func InitDB() *gorm.DB {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -22,17 +22,17 @@ func InitDB() *sql.DB {
 	dbPort := os.Getenv("DB_PORT")
 	dbName := os.Getenv("DB_NAME")
 	dbSSLMode := os.Getenv("DB_SSLMODE")
+	connectionString := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s", dbHost, dbUser, dbPassword, dbName, dbPort, dbSSLMode)
 
-	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", dbUser, dbPassword, dbHost, dbPort, dbName, dbSSLMode)
-	db, err := sql.Open("postgres", connStr)
+	db, err := gorm.Open(postgres.Open(connectionString), &gorm.Config{})
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
-
-	err = db.Ping()
-	if err != nil {
-		log.Fatal("Cannot connect to the database:", err)
-	}
-
+	/*
+		err = db.
+		if err != nil {
+			log.Fatal("Cannot connect to the database:", err)
+		}
+	*/
 	return db
 }

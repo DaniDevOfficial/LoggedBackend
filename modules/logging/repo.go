@@ -1,24 +1,15 @@
 package logging
 
-import "database/sql"
+import "gorm.io/gorm"
 
-func CreateLogEntryDB(entry NewLogEntry, db *sql.DB) (string, error) {
-	query := `
-INSERT INTO LogEntry
-    (severity, message, request, user_id, request_url, response, lifetime, request_key, date_time) 
-VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-RETURNING
-	id
-`
-	row := db.QueryRow(query, entry.Severity, entry.Message, entry.Request, entry.UserId, entry.RequestUrl, entry.Response, entry.LifeTime, entry.RequestKey, entry.DateTime)
+func CreateLogEntryDB(entry NewLogEntry, db *gorm.DB) (string, error) {
+	tx := db.Table("LogEntry").Create(&entry)
+	//TODO: Figure out how to get the id of the log entry
 
-	var id string
-	err := row.Scan(&id)
-	return id, err
 }
 
-func GetFilteredLogEntriesFromDB(db *gorm.DB, filters FilterLogEntryRequest) () {
-	query := db.table('LogEntry')
+func GetFilteredLogEntriesFromDB(db *gorm.DB, filters FilterLogEntryRequest) {
+	query := db.Table("LogEntry")
 
 	if filters.LogEntryId != "" {
 		query = query.Where("id = ?", filters.LogEntryId)
@@ -46,6 +37,10 @@ func GetFilteredLogEntriesFromDB(db *gorm.DB, filters FilterLogEntryRequest) () 
 		query = query.Where("request_key ILIKE ?", "%"+filters.RequestKeyFilter+"%")
 	}
 	if filters.StartDateFilter != "" {
-		query = query.Where("")
+		query = query.Where("dateTime >= ?", filters.StartDateFilter)
 	}
+	if filters.EndDateFilter != "" {
+		query = query.Where("dateTime <= ?", filters.EndDateFilter)
+	}
+	//TODO: figure out gorm
 }

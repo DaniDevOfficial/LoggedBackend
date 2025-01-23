@@ -3,6 +3,7 @@ package logging
 import (
 	"database/sql"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"net/http"
 )
 
@@ -10,7 +11,7 @@ const HardLimitEntries = 500
 
 const DefaultLimitEntries = 50
 
-func CreateLogEntry(c *gin.Context, db *sql.DB) {
+func CreateLogEntry(c *gin.Context, db *gorm.DB) {
 
 	var newLogEntry NewLogEntry
 

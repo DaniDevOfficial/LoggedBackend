@@ -1,15 +1,15 @@
 package logging
 
 import (
-	"database/sql"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
-func RegisterLoggingRoutes(router *gin.Engine, db *sql.DB) {
+func RegisterLoggingRoutes(router *gin.Engine, db *gorm.DB) {
 	registerBasicLoggingRoutes(router, db)
 }
 
-func registerBasicLoggingRoutes(router *gin.Engine, db *sql.DB) {
+func registerBasicLoggingRoutes(router *gin.Engine, db *gorm.DB) {
 	router.POST("/logEntry", func(c *gin.Context) {
 		CreateLogEntry(c, db)
 	})
