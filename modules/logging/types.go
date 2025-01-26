@@ -1,15 +1,32 @@
 package logging
 
 type NewLogEntry struct {
+	ID         string `gorm:"primaryKey;type:uuid;default:gen_random_uuid()"` // Auto-generate UUID
 	Severity   string `json:"severity" binding:"required"`
-	Message    string `json:"message" binding:"required"`
-	Request    string `json:"request" binding:"required"`
-	UserId     string `json:"userId" binding:"required"`
-	RequestUrl string `json:"requestUrl" binding:"required"`
-	Response   string `json:"response" binding:"required"`
-	LifeTime   string `json:"lifeTime" binding:"required"`
-	RequestKey string `json:"requestKey" binding:"required"`
-	DateTime   string `json:"dateTime" binding:"required,dateTime"`
+	Message    string `json:"message"`
+	Request    string `json:"request"`
+	UserId     string `json:"userId"`
+	RequestUrl string `json:"requestUrl"`
+	Response   string `json:"response"`
+	LifeTime   string `json:"lifeTime"`
+	RequestKey string `json:"requestKey"`
+	DateTime   string `json:"dateTime" binding:"dateTime"`
+}
+
+type EntryFromDB struct {
+	Id         string `json:"id"`
+	Severity   string `json:"severity"`
+	Message    string `json:"message"`
+	Request    string `json:"request"`
+	UserId     string `json:"userId"`
+	RequestUrl string `json:"requestUrl"`
+	Response   string `json:"response"`
+	LifeTime   string `json:"lifeTime"`
+	RequestKey string `json:"requestKey"`
+	DateTime   string `json:"dateTime"`
+}
+
+type Entry struct {
 }
 
 type FilterLogEntryRequest struct {
@@ -20,10 +37,13 @@ type FilterLogEntryRequest struct {
 	UserIdFilter     string `json:"userIdFilter"`
 	RequestUrlFilter string `json:"requestUrlFilter"`
 	ResponseFilter   string `json:"responseFilter"`
+	LifeTimeFilter   string `json:"lifeTimeFilter"`
 	RequestKeyFilter string `json:"requestKeyFilter"`
 	StartDateFilter  string `json:"startDateFilter"`
 	EndDateFilter    string `json:"endDateFilter"`
 	Limit            int    `json:"limit"`
+	Ordering         string `json:"ordering"`
+	Page             string `json:"page"`
 }
 
 type Error struct {

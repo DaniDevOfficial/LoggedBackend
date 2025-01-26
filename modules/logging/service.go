@@ -1,7 +1,7 @@
 package logging
 
 import (
-	"database/sql"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
@@ -19,7 +19,7 @@ func CreateLogEntry(c *gin.Context, db *gorm.DB) {
 		c.JSON(http.StatusBadRequest, Error{Message: "Invalid Request Body"})
 		return
 	}
-
+	fmt.Println(newLogEntry)
 	//TODO: Auth
 
 	//TODO: Check for passwords etc inside of the log entry and hide them with ***
@@ -35,7 +35,7 @@ func CreateLogEntry(c *gin.Context, db *gorm.DB) {
 	c.JSON(http.StatusCreated, IdResponse{Id: id})
 }
 
-func GetFilteredLogEntriesWithLimit(c *gin.Context, db *sql.DB) {
+func GetFilteredLogEntriesWithLimit(c *gin.Context, db *gorm.DB) {
 	var filters FilterLogEntryRequest
 	if err := c.ShouldBindQuery(&filters); err != nil {
 		c.JSON(http.StatusBadRequest, Error{Message: "Invalid Request Body"})
@@ -48,5 +48,6 @@ func GetFilteredLogEntriesWithLimit(c *gin.Context, db *sql.DB) {
 	if filters.Limit > HardLimitEntries {
 		filters.Limit = HardLimitEntries
 	}
+	GetFilteredLogEntriesFromDB(db, filters)
 
 }
