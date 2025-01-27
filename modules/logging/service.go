@@ -37,7 +37,7 @@ func CreateLogEntry(c *gin.Context, db *gorm.DB) {
 
 func GetFilteredLogEntriesWithLimit(c *gin.Context, db *gorm.DB) {
 	var filters FilterLogEntryRequest
-	if err := c.ShouldBindQuery(&filters); err != nil {
+	if err := c.ShouldBindJSON(&filters); err != nil {
 		c.JSON(http.StatusBadRequest, Error{Message: "Invalid Request Body"})
 		return
 	}
@@ -48,6 +48,12 @@ func GetFilteredLogEntriesWithLimit(c *gin.Context, db *gorm.DB) {
 	if filters.Limit > HardLimitEntries {
 		filters.Limit = HardLimitEntries
 	}
-	GetFilteredLogEntriesFromDB(db, filters)
+	entries, err := GetFilteredLogEntriesFromDB(db, filters)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, Error{Message: "internal server error"})
+		return
+	}
+
+	c.JSON(http.StatusOK, entries)
 
 }

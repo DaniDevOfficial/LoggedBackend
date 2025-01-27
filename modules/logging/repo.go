@@ -1,7 +1,9 @@
 package logging
 
 import (
+	"errors"
 	"gorm.io/gorm"
+	"log"
 )
 
 func CreateLogEntryDB(entry NewLogEntry, db *gorm.DB) (string, error) {
@@ -14,8 +16,12 @@ func CreateLogEntryDB(entry NewLogEntry, db *gorm.DB) (string, error) {
 	return entry.ID, nil
 }
 
-func GetFilteredLogEntriesFromDB(db *gorm.DB, filters FilterLogEntryRequest) {
-	query := db.Table("LogEntry")
+var ErrGettingEntries = errors.New("error getting entries")
+
+func GetFilteredLogEntriesFromDB(db *gorm.DB, filters FilterLogEntryRequest) ([]NewLogEntry, error) {
+	var entries []NewLogEntry
+
+	query := db.Table("logs")
 
 	if filters.LogEntryId != "" {
 		query = query.Where("id = ?", filters.LogEntryId)
@@ -55,6 +61,20 @@ func GetFilteredLogEntriesFromDB(db *gorm.DB, filters FilterLogEntryRequest) {
 		query = query.Order("date_time desc")
 
 	}
-	//Scan row for each entry save it and then return the array of entries
-	return
+	if filters.Limit > 0 {
+		query = query.Limit(filters.Limit)
+	} else {
+		query = query.Limit(HardLimitEntries)
+	}
+	if filters.Page > 0 {
+		offset := (filters.Page - 1) * filters.Limit
+		query = query.Offset(offset)
+	}
+
+	if err := query.Find(&entries).Error; err != nil {
+		log.Println(err)
+		return entries, ErrGettingEntries
+	}
+
+	return entries, nil
 }

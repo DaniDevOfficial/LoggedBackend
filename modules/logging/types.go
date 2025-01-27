@@ -42,8 +42,8 @@ type FilterLogEntryRequest struct {
 	StartDateFilter  string `json:"startDateFilter"`
 	EndDateFilter    string `json:"endDateFilter"`
 	Limit            int    `json:"limit"`
+	Page             int    `json:"page"`
 	Ordering         string `json:"ordering"`
-	Page             string `json:"page"`
 }
 
 type Error struct {
