@@ -6,6 +6,18 @@ import (
 	"log"
 )
 
+// Severities
+// TODO: maybe make it so the user can add his own severites inside of the db and then just map the names as if the severities were in the code
+const (
+	INFO       = "INFO"
+	DEBUG      = "DEBUG"
+	ERROR      = "ERROR"
+	WARNING    = "WARN"
+	SUSPICIOUS = "SUSPICIOUS"
+	CRASHED    = "CRASH"
+	INTERNAL   = "INTERNAL"
+)
+
 func CreateLogEntryDB(entry NewLogEntry, db *gorm.DB) (string, error) {
 	result := db.Table("logs").Create(&entry)
 
@@ -26,7 +38,6 @@ func GetFilteredLogEntriesFromDB(db *gorm.DB, filters FilterLogEntryRequest) ([]
 	if filters.LogEntryId != "" {
 		query = query.Where("id = ?", filters.LogEntryId)
 	}
-
 	if filters.SeverityFilter != "" {
 		query = query.Where("severity = ?", filters.SeverityFilter)
 	}
@@ -54,7 +65,6 @@ func GetFilteredLogEntriesFromDB(db *gorm.DB, filters FilterLogEntryRequest) ([]
 	if filters.EndDateFilter != "" {
 		query = query.Where("dateTime <= ?", filters.EndDateFilter)
 	}
-	//TODO: figure out gorm
 	if filters.Ordering == "asc" {
 		query = query.Order("date_time asc")
 	} else {
