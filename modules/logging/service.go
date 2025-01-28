@@ -20,7 +20,7 @@ func CreateLogEntry(c *gin.Context, db *gorm.DB) {
 	}
 	//TODO: Auth
 
-	//TODO: Check for passwords etc inside of the log entry and hide them with ***
+	newLogEntry.Request = EncodePersonalInformation(newLogEntry.Request)
 
 	//TODO: save entry in database and response the created Id
 	id, err := CreateLogEntryDB(newLogEntry, db)

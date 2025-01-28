@@ -1,16 +1,14 @@
 package main
 
 import (
-	"fmt"
+	"github.com/gin-gonic/gin"
 	"loggedin/modules/logging"
+	"loggedin/utility/db"
+	"loggedin/utility/validator"
 )
 
 func main() {
-	jsonInput := `{"name": "John", "age": 30, "isAdmin": true, "password": 123}`
-
-	tmp := logging.EncodePersonalInformation(jsonInput)
-	fmt.Println(tmp)
-	/*dbConnection := db.InitDB()
+	dbConnection := db.InitDB()
 	router := gin.Default()
 	validator.InitCustomValidators()
 
@@ -19,5 +17,5 @@ func main() {
 	err := router.Run("localhost:8000")
 	if err != nil {
 		panic("Startup went wrong")
-	}*/
+	}
 }
