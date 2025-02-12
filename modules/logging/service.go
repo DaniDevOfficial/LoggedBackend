@@ -18,11 +18,11 @@ func CreateLogEntry(c *gin.Context, db *gorm.DB) {
 		c.JSON(http.StatusBadRequest, Error{Message: "Invalid Request Body"})
 		return
 	}
-	//TODO: Auth
+	//TODO: Auth with maybe some api key, which can be created by system admins.
 
+	//TODO: If system is dev ignore the encoding
 	newLogEntry.Request = EncodePersonalInformation(newLogEntry.Request)
 
-	//TODO: save entry in database and response the created Id
 	id, err := CreateLogEntryDB(newLogEntry, db)
 
 	if err != nil {
@@ -40,12 +40,14 @@ func GetFilteredLogEntriesWithLimit(c *gin.Context, db *gorm.DB) {
 		return
 	}
 
+	//TODO: auth of requesting user or with api key
 	if filters.Limit == 0 {
 		filters.Limit = DefaultLimitEntries
 	}
 	if filters.Limit > HardLimitEntries {
 		filters.Limit = HardLimitEntries
 	}
+
 	entries, err := GetFilteredLogEntriesFromDB(db, filters)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, Error{Message: "internal server error"})
@@ -53,5 +55,4 @@ func GetFilteredLogEntriesWithLimit(c *gin.Context, db *gorm.DB) {
 	}
 
 	c.JSON(http.StatusOK, entries)
-
 }
