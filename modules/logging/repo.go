@@ -39,7 +39,7 @@ func GetFilteredLogEntriesFromDB(db *gorm.DB, filters FilterLogEntryRequest) ([]
 		query = query.Where("id = ?", filters.LogEntryId)
 	}
 	if filters.SeverityFilter != "" {
-		query = query.Where("severity = ?", filters.SeverityFilter)
+		query = query.Where("severity ILIKE ?", "%"+filters.SeverityFilter+"%")
 	}
 	if filters.MessageFilter != "" {
 		query = query.Where("message ILIKE ?", "%"+filters.MessageFilter+"%")
@@ -69,8 +69,8 @@ func GetFilteredLogEntriesFromDB(db *gorm.DB, filters FilterLogEntryRequest) ([]
 		query = query.Order("date_time asc")
 	} else {
 		query = query.Order("date_time desc")
-
 	}
+
 	if filters.Limit > 0 {
 		query = query.Limit(filters.Limit)
 	} else {

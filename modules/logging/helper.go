@@ -23,7 +23,9 @@ func EncodePersonalInformation(input string) string {
 
 	return string(jsonString)
 }
+
 func redactSensitiveFields(data interface{}, sensitiveKeys []string) interface{} {
+
 	switch v := data.(type) {
 	case map[string]interface{}:
 		redactedInCycle := false
