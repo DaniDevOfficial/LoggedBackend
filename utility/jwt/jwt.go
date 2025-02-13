@@ -19,7 +19,7 @@ func CreateToken(userData JWTUser) (string, error) {
 		jwt.MapClaims{
 			"UserId":   userData.UserId,
 			"Username": userData.Username,
-			"Exp":      time.Now().Add(time.Hour * 24).Unix(),
+			"Exp":      time.Now().Add(time.Minute * 15).Unix(),
 		})
 	tokenString, err := token.SignedString(secretKey)
 	if err != nil {
@@ -44,6 +44,15 @@ func VerifyToken(tokenString string) (bool, error) {
 	if !token.Valid {
 		return false, nil
 	}
+	tokenData, err := DecodeBearer(tokenString)
+	if err != nil {
+		return false, err
+	}
+
+	if tokenData.Exp < time.Now().Unix() {
+		return false, nil
+	}
+
 	return true, nil
 }
 
@@ -89,12 +98,16 @@ func VerifyRefreshToken(tokenString string, db *gorm.DB) (JWTPayload, error) {
 		return JWTPayload{}, fmt.Errorf("failed to unmarshal payload: %v", err)
 	}
 
+	if payload.Exp < time.Now().Unix() {
+		return payload, nil
+	}
+
 	inDB, err := VerifyRefreshTokenInDB(tokenString, payload.UserId, db)
 	if err != nil {
-		return JWTPayload{}, err
+		return payload, err
 	}
 	if !inDB {
-		return JWTPayload{}, RefreshTokenNotInDbError
+		return payload, RefreshTokenNotInDbError
 	}
 
 	return payload, nil
@@ -104,6 +117,7 @@ func VerifyRefreshTokenInDB(token string, userId string, db *gorm.DB) (bool, err
 	var count int64
 	err := db.Table("refreshTokens").
 		Where("user_id = ?", userId).
+		Where("refreshToken = ?", token).
 		Where("refreshToken = ?", token).
 		Count(&count).Error
 
