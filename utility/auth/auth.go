@@ -40,7 +40,9 @@ func GetJWTPayloadFromHeader(c *gin.Context, db *gorm.DB) (jwt.JWTPayload, error
 	if err != nil {
 		return jwtData, err
 	}
-	valid, err := jwt.VerifyToken(jwtToken)
+
+	isClaimRequest := c.GetBool("isClaimRequest")
+	valid, err := jwt.VerifyToken(jwtToken, isClaimRequest)
 	if err != nil {
 		return jwtData, err
 	}

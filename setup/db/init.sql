@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS logs (
     request_key VARCHAR(255) NOT NULL,
     date_time TIMESTAMP NOT NULL
     created_at TIMESTAMPTZ      DEFAULT CURRENT_TIMESTAMP
-    );
+);
 
 CREATE TABLE IF NOT EXISTS refreshTokens (
     id   UUID PRIMARY KEY DEFAULT gen_random_uuid(),

@@ -12,7 +12,8 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var secretKey = []byte("capybara") // TODO: add secret key via .env or some rotation
+var secretKey = []byte("capybara")       // TODO: add secret key via .env or some rotation
+var claimSecretKey = []byte("capybara2") // TODO: add secret key via .env or some rotation
 
 func CreateToken(userData JWTUser) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
@@ -28,9 +29,56 @@ func CreateToken(userData JWTUser) (string, error) {
 	return tokenString, nil
 }
 
-func VerifyToken(tokenString string) (bool, error) {
+func CreateClaimToken(userData JWTUser) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
+		jwt.MapClaims{
+			"UserId":   userData.UserId,
+			"Username": userData.Username,
+			"Exp":      time.Now().Add(time.Minute * 5).Unix(),
+		})
+	tokenString, err := token.SignedString(claimSecretKey)
+	if err != nil {
+		return "", err
+	}
+	return tokenString, nil
+}
+
+func CreateRefreshToken(userData JWTUser, isTimeBased bool, db *gorm.DB) (string, error) {
+	var exp int64 = 0
+	if isTimeBased {
+		exp = time.Now().Add(time.Hour * 15).Unix()
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
+		jwt.MapClaims{
+			"UserId":   userData.UserId,
+			"Username": userData.Username,
+			"Exp":      exp,
+		})
+	tokenString, err := token.SignedString(secretKey)
+	if err != nil {
+		return "", err
+	}
+
+	data := NewRefreshTokenDataDB{
+		UserId:       userData.UserId,
+		RefreshToken: tokenString,
+	}
+	err = PushRefreshTokenToDB(data, db)
+	if err != nil {
+		return "", err
+	}
+	return tokenString, nil
+}
+
+func VerifyToken(tokenString string, isClaimRequest bool) (bool, error) {
+	secret := secretKey
+	if isClaimRequest {
+		secret = claimSecretKey
+	}
+
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-		return secretKey, nil
+		return secret, nil
 	})
 
 	if err != nil {
@@ -78,6 +126,7 @@ func DecodeBearer(tokenString string) (JWTPayload, error) {
 }
 
 var RefreshTokenNotInDbError = errors.New("refresh token not found in database")
+var RefreshTokenIsNotValidDueToExpirationDate = errors.New("refresh token not valid due to expiration date")
 
 func VerifyRefreshToken(tokenString string, db *gorm.DB) (JWTPayload, error) {
 
@@ -97,9 +146,10 @@ func VerifyRefreshToken(tokenString string, db *gorm.DB) (JWTPayload, error) {
 	if err != nil {
 		return JWTPayload{}, fmt.Errorf("failed to unmarshal payload: %v", err)
 	}
-
-	if payload.Exp < time.Now().Unix() {
-		return payload, nil
+	if payload.Exp > 0 {
+		if payload.Exp < time.Now().Unix() {
+			return payload, RefreshTokenIsNotValidDueToExpirationDate
+		}
 	}
 
 	inDB, err := VerifyRefreshTokenInDB(tokenString, payload.UserId, db)
@@ -125,4 +175,15 @@ func VerifyRefreshTokenInDB(token string, userId string, db *gorm.DB) (bool, err
 		return false, err
 	}
 	return count > 0, nil
+}
+
+type NewRefreshTokenDataDB struct {
+	UserId       string `json:"userId"`
+	RefreshToken string `json:"refreshToken"`
+}
+
+func PushRefreshTokenToDB(data NewRefreshTokenDataDB, db *gorm.DB) error {
+
+	result := db.Table("refreshTokens").Create(&data)
+	return result.Error
 }
