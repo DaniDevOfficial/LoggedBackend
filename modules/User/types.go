@@ -1,9 +1,9 @@
 package User
 
 type LoginRequest struct {
-	Username    string `json:"username"`
-	Password    string `json:"password"`
-	IsTimeBased bool   `json:"isTimeBased"`
+	Username    string `json:"username" binding:"required"`
+	Password    string `json:"password" binding:"required"`
+	IsTimeBased bool   `json:"isTimeBased" binding:"required"`
 }
 
 type DbUser struct {
@@ -15,6 +15,10 @@ type DbUser struct {
 
 type LoginResponse struct {
 	IsClaimed bool `json:"is_claimed"`
+}
+
+type ClaimRequest struct {
+	NewPassword string `json:"newPassword" binding:"required"`
 }
 
 type Error struct {

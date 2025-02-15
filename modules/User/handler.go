@@ -15,7 +15,7 @@ func registerAuthRoutes(router *gin.Engine, db *gorm.DB) {
 	})
 
 	router.POST("/auth/claim", func(c *gin.Context) {
-
+		Claim(c, db)
 	})
 
 	router.PUT("/auth/password", func(c *gin.Context) {

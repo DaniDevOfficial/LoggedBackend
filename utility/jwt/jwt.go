@@ -178,7 +178,8 @@ func VerifyRefreshTokenInDB(token string, userId string, db *gorm.DB) (bool, err
 }
 
 type NewRefreshTokenDataDB struct {
-	UserId       string `json:"userId"`
+	UserId string `json:"userId"`
+
 	RefreshToken string `json:"refreshToken"`
 }
 
