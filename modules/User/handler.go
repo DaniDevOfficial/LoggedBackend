@@ -5,7 +5,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func RegisterUseroutes(router *gin.Engine, db *gorm.DB) {
+func RegisterUserRoutes(router *gin.Engine, db *gorm.DB) {
 	registerAuthRoutes(router, db)
 }
 

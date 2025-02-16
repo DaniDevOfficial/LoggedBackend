@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"log"
 	"loggedin/modules/Dev"
+	"loggedin/modules/User"
 	"loggedin/modules/logging"
 	"loggedin/utility/db"
 	"loggedin/utility/validator"
@@ -17,7 +18,10 @@ func main() {
 	validator.InitCustomValidators()
 
 	logging.RegisterLoggingRoutes(router, dbConnection)
+	User.RegisterUserRoutes(router, dbConnection)
+
 	Dev.RegisterDevRoutes(router, dbConnection)
+
 	err := router.Run("localhost:8000")
 	if err != nil {
 		panic("Startup went wrong")
@@ -31,6 +35,7 @@ func corsMiddleware() gin.HandlerFunc {
 		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, RefreshToken")
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Expose-Headers", "Authorization, RefreshToken")
 
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(http.StatusOK)

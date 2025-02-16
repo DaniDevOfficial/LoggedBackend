@@ -38,10 +38,10 @@ func GetUserInformationById(userId string, db *gorm.DB) (DbUser, error) {
 	return userData, nil
 }
 
-func MarkUserAsClaimed(userId string, db *gorm.DB) error {
+func MarkUserAsClaimed(userId string, claimUserData ClaimUser, db *gorm.DB) error {
 	result := db.Table("users").
 		Where("id = ?", userId).
-		Updates(map[string]interface{}{"is_claimed": true})
+		Updates(claimUserData)
 
 	if result.Error != nil {
 		return result.Error

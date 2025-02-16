@@ -167,8 +167,7 @@ func VerifyRefreshTokenInDB(token string, userId string, db *gorm.DB) (bool, err
 	var count int64
 	err := db.Table("refreshTokens").
 		Where("user_id = ?", userId).
-		Where("refreshToken = ?", token).
-		Where("refreshToken = ?", token).
+		Where("refresh_token = ?", token).
 		Count(&count).Error
 
 	if err != nil {
@@ -178,9 +177,8 @@ func VerifyRefreshTokenInDB(token string, userId string, db *gorm.DB) (bool, err
 }
 
 type NewRefreshTokenDataDB struct {
-	UserId string `json:"userId"`
-
-	RefreshToken string `json:"refreshToken"`
+	UserId       string `json:"userId"`
+	RefreshToken string `json:"refresh_token"`
 }
 
 func PushRefreshTokenToDB(data NewRefreshTokenDataDB, db *gorm.DB) error {

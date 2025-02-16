@@ -3,7 +3,7 @@ package User
 type LoginRequest struct {
 	Username    string `json:"username" binding:"required"`
 	Password    string `json:"password" binding:"required"`
-	IsTimeBased bool   `json:"isTimeBased" binding:"required"`
+	IsTimeBased bool   `json:"isTimeBased"`
 }
 
 type DbUser struct {
@@ -14,7 +14,7 @@ type DbUser struct {
 }
 
 type LoginResponse struct {
-	IsClaimed bool `json:"is_claimed"`
+	IsClaimed bool `json:"isClaimed"`
 }
 
 type ClaimRequest struct {

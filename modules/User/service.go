@@ -33,7 +33,6 @@ func Login(c *gin.Context, db *gorm.DB) {
 		c.JSON(http.StatusBadRequest, Error{Message: "Wrong username or password"})
 		return
 	}
-
 	if !hashing.CheckHashedString(userData.Password, loginData.Password) {
 		c.JSON(http.StatusBadRequest, Error{Message: "Wrong username or password"})
 		return
@@ -63,9 +62,14 @@ func Login(c *gin.Context, db *gorm.DB) {
 			c.JSON(http.StatusInternalServerError, Error{Message: "Internal server Error"})
 			return
 		}
-		c.Writer.Header().Set("ClaimToken", token)
+		c.Writer.Header().Set("Authorization", token)
 	}
 	c.JSON(http.StatusOK, LoginResponse{IsClaimed: userData.IsClaimed})
+}
+
+type ClaimUser struct {
+	IsClaimed bool   `json:"is_claimed"`
+	Password  string `json:"password"`
 }
 
 func Claim(c *gin.Context, db *gorm.DB) {
@@ -102,7 +106,6 @@ func Claim(c *gin.Context, db *gorm.DB) {
 		c.JSON(http.StatusInternalServerError, Error{Message: "Internal server Error"})
 		return
 	}
-
 	if userData.IsClaimed {
 		c.JSON(http.StatusBadRequest, Error{Message: "User Claim Error"})
 		return
@@ -123,7 +126,18 @@ func Claim(c *gin.Context, db *gorm.DB) {
 		c.JSON(http.StatusInternalServerError, Error{Message: "Internal server Error"})
 		return
 	}
-	err = MarkUserAsClaimed(userData.Id, db)
+
+	hashedPassword, err := hashing.HashPassword(claimData.NewPassword)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, Error{Message: "Internal server Error"})
+		return
+	}
+
+	claimUser := ClaimUser{
+		IsClaimed: true,
+		Password:  hashedPassword,
+	}
+	err = MarkUserAsClaimed(userData.Id, claimUser, db)
 	if err != nil {
 		if errors.Is(err, NotFoundError) {
 			c.JSON(http.StatusBadRequest, Error{Message: "User Not Found"})
