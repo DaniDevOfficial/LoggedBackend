@@ -86,8 +86,11 @@ func Claim(c *gin.Context, db *gorm.DB) {
 		c.JSON(http.StatusBadRequest, Error{Message: "IDK"})
 		return
 	}
-
-	isValid, err := validation.IsValidPassword(claimData.NewPassword)
+	if !jwtToken.IsClaimToken {
+		c.JSON(http.StatusBadRequest, Error{Message: "IDK"})
+		return
+	}
+	isValid, err := validation.IsValidPassword(claimData.Password)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, Error{Message: err.Error()})
 		return
@@ -127,7 +130,7 @@ func Claim(c *gin.Context, db *gorm.DB) {
 		return
 	}
 
-	hashedPassword, err := hashing.HashPassword(claimData.NewPassword)
+	hashedPassword, err := hashing.HashPassword(claimData.Password)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, Error{Message: "Internal server Error"})
 		return

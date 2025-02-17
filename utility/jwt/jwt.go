@@ -32,9 +32,10 @@ func CreateToken(userData JWTUser) (string, error) {
 func CreateClaimToken(userData JWTUser) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
-			"UserId":   userData.UserId,
-			"Username": userData.Username,
-			"Exp":      time.Now().Add(time.Minute * 5).Unix(),
+			"UserId":       userData.UserId,
+			"Username":     userData.Username,
+			"isClaimToken": true,
+			"Exp":          time.Now().Add(time.Minute * 5).Unix(),
 		})
 	tokenString, err := token.SignedString(claimSecretKey)
 	if err != nil {

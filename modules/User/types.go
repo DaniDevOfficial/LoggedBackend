@@ -18,7 +18,8 @@ type LoginResponse struct {
 }
 
 type ClaimRequest struct {
-	NewPassword string `json:"newPassword" binding:"required"`
+	Password    string `json:"password" binding:"required"`
+	IsTimeBased bool   `json:"isTimeBased"`
 }
 
 type Error struct {

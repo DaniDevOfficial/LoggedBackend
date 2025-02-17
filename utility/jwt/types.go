@@ -6,9 +6,10 @@ type JWTUser struct {
 }
 
 type JWTPayload struct {
-	UserId   string
-	Username string
-	Exp      int64
+	UserId       string
+	Username     string
+	IsClaimToken bool
+	Exp          int64
 }
 
 type JWTTokenResponse struct {
