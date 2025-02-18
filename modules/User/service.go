@@ -4,7 +4,6 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"log"
 	"loggedin/utility/auth"
 	"loggedin/utility/hashing"
 	"loggedin/utility/jwt"
@@ -82,8 +81,7 @@ func Claim(c *gin.Context, db *gorm.DB) {
 	c.Set("isClaimRequest", true)
 	jwtToken, err := auth.GetJWTPayloadFromHeader(c, db)
 	if err != nil {
-		log.Println(err)
-		c.JSON(http.StatusBadRequest, Error{Message: "IDK"})
+		c.JSON(http.StatusUnauthorized, Error{Message: "Please try again"})
 		return
 	}
 	if !jwtToken.IsClaimToken {
@@ -96,7 +94,7 @@ func Claim(c *gin.Context, db *gorm.DB) {
 		return
 	}
 	if !isValid {
-		c.JSON(http.StatusBadRequest, Error{Message: "IDK"})
+		c.JSON(http.StatusBadRequest, Error{Message: "how???"})
 		return
 	}
 

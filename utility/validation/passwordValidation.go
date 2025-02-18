@@ -2,7 +2,6 @@ package validation
 
 import (
 	"fmt"
-	"log"
 	"strconv"
 )
 
@@ -44,7 +43,5 @@ func checkForCharacters(password string) bool {
 			break
 		}
 	}
-	fmt.Printf("Upper: %v, Lower: %v, Digit: %v, Special: %v\n", hasUpper, hasLower, hasDigit, hasSpecial)
-	log.Println(hasUpper, hasLower, hasDigit, hasSpecial)
 	return hasUpper && hasLower && hasDigit && hasSpecial
 }

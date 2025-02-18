@@ -45,16 +45,22 @@ func CreateClaimToken(userData JWTUser) (string, error) {
 }
 
 func CreateRefreshToken(userData JWTUser, isTimeBased bool, db *gorm.DB) (string, error) {
-	var exp int64 = 0
+	var dateTime *time.Time
 	if isTimeBased {
-		exp = time.Now().Add(time.Hour * 15).Unix()
+		t := time.Now().Add(time.Hour * 15)
+		dateTime = &t
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256,
 		jwt.MapClaims{
 			"UserId":   userData.UserId,
 			"Username": userData.Username,
-			"Exp":      exp,
+			"Exp": func() int64 {
+				if dateTime != nil {
+					return dateTime.Unix()
+				}
+				return 0
+			}(),
 		})
 	tokenString, err := token.SignedString(secretKey)
 	if err != nil {
@@ -64,6 +70,7 @@ func CreateRefreshToken(userData JWTUser, isTimeBased bool, db *gorm.DB) (string
 	data := NewRefreshTokenDataDB{
 		UserId:       userData.UserId,
 		RefreshToken: tokenString,
+		LifeTime:     dateTime,
 	}
 	err = PushRefreshTokenToDB(data, db)
 	if err != nil {
@@ -178,12 +185,15 @@ func VerifyRefreshTokenInDB(token string, userId string, db *gorm.DB) (bool, err
 }
 
 type NewRefreshTokenDataDB struct {
-	UserId       string `json:"userId"`
-	RefreshToken string `json:"refresh_token"`
+	UserId       string     `json:"userId"`
+	RefreshToken string     `json:"refresh_token"`
+	LifeTime     *time.Time `json:"lifeTime"`
 }
 
 func PushRefreshTokenToDB(data NewRefreshTokenDataDB, db *gorm.DB) error {
-
+	if data.LifeTime != nil && data.LifeTime.IsZero() {
+		data.LifeTime = nil
+	}
 	result := db.Table("refreshTokens").Create(&data)
 	return result.Error
 }
