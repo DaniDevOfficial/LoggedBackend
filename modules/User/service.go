@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"log"
 	"loggedin/utility/auth"
 	"loggedin/utility/hashing"
 	"loggedin/utility/jwt"
@@ -27,12 +28,13 @@ func Login(c *gin.Context, db *gorm.DB) {
 		c.JSON(http.StatusInternalServerError, Error{Message: "Internal server Error"})
 		return
 	}
-
 	if userData.Username != loginData.Username {
 		c.JSON(http.StatusBadRequest, Error{Message: "Wrong username or password"})
 		return
 	}
+
 	if !hashing.CheckHashedString(userData.Password, loginData.Password) {
+		log.Println("Wrong password")
 		c.JSON(http.StatusBadRequest, Error{Message: "Wrong username or password"})
 		return
 	}

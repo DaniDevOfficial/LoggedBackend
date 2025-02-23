@@ -3,6 +3,8 @@ package logging
 import (
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"log"
+	"loggedin/utility/auth"
 	"net/http"
 )
 
@@ -40,7 +42,13 @@ func GetFilteredLogEntriesWithLimit(c *gin.Context, db *gorm.DB) {
 		return
 	}
 
-	//TODO: auth of requesting user or with api key
+	_, err := auth.GetJWTPayloadFromHeader(c, db)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusUnauthorized, Error{Message: "Unauthorized to perform action please login to continue"})
+		return
+	}
+
 	if filters.Limit == 0 {
 		filters.Limit = DefaultLimitEntries
 	}

@@ -47,7 +47,7 @@ func CreateClaimToken(userData JWTUser) (string, error) {
 func CreateRefreshToken(userData JWTUser, isTimeBased bool, db *gorm.DB) (string, error) {
 	var dateTime *time.Time
 	if isTimeBased {
-		t := time.Now().Add(time.Hour * 15)
+		t := time.Now().Add(time.Hour * 24 * 14)
 		dateTime = &t
 	}
 
@@ -155,7 +155,7 @@ func VerifyRefreshToken(tokenString string, db *gorm.DB) (JWTPayload, error) {
 		return JWTPayload{}, fmt.Errorf("failed to unmarshal payload: %v", err)
 	}
 	if payload.Exp > 0 {
-		if payload.Exp < time.Now().Unix() {
+		if payload.Exp < time.Now().Unix()-3600*24*8 {
 			return payload, RefreshTokenIsNotValidDueToExpirationDate
 		}
 	}
@@ -176,6 +176,7 @@ func VerifyRefreshTokenInDB(token string, userId string, db *gorm.DB) (bool, err
 	err := db.Table("refreshTokens").
 		Where("user_id = ?", userId).
 		Where("refresh_token = ?", token).
+		Update("last_usage", gorm.Expr("NOW()")).
 		Count(&count).Error
 
 	if err != nil {

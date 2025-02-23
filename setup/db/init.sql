@@ -14,14 +14,14 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS logs (
                                     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     severity VARCHAR(50) NOT NULL,
-    message TEXT NOT NULL,
-    request TEXT NOT NULL,
-    user_id UUID NOT NULL, -- Just an identifier, no FK
-    request_url TEXT NOT NULL,
-    response TEXT NOT NULL,
-    life_time INTERVAL NOT NULL,
-    request_key TEXT NOT NULL,
-    date_time TIMESTAMP NOT NULL,
+    message TEXT,
+    request TEXT,
+    user_id TEXT, -- Just an identifier, no FK
+    request_url TEXT,
+    response TEXT,
+    life_time TIMESTAMPTZ,
+    request_key TEXT,
+    date_time TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
     );
 

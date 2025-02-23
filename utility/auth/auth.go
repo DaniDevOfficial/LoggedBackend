@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"log"
 	"loggedin/utility/jwt"
 )
 
@@ -38,6 +37,13 @@ func GetJWTPayloadFromHeader(c *gin.Context, db *gorm.DB) (jwt.JWTPayload, error
 	jwtToken, err := GetJWTTokenFromHeader(c)
 	var jwtData jwt.JWTPayload
 	if err != nil {
+		jwtData, newJwtToken, err := CreateNewTokenWithRefreshToken(c, db)
+
+		if err != nil {
+			return jwtData, err
+		}
+
+		c.Header("Authorization", newJwtToken)
 		return jwtData, err
 	}
 
@@ -48,22 +54,17 @@ func GetJWTPayloadFromHeader(c *gin.Context, db *gorm.DB) (jwt.JWTPayload, error
 	}
 	if !valid {
 		jwtData, newJwtToken, err := CreateNewTokenWithRefreshToken(c, db)
-		log.Println(jwtData, newJwtToken, err)
+
 		if err != nil {
 			return jwtData, err
 		}
 
-		c.Header("authToken", newJwtToken)
+		c.Header("Authorization", newJwtToken)
 		return jwtData, err
 	}
 
 	jwtData, err = jwt.DecodeBearer(jwtToken)
 	if err != nil {
-		jwtData, newJwtToken, err := CreateNewTokenWithRefreshToken(c, db)
-		if err != nil {
-			return jwtData, err
-		}
-		c.Header("authToken", newJwtToken)
 		return jwtData, err
 	}
 	return jwtData, err

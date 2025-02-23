@@ -12,6 +12,10 @@ import (
 type HashingRequest struct {
 	Password string `json:"password"`
 }
+type ComparingRequest struct {
+	Password string `json:"password"`
+	Hash     string `json:"hash"`
+}
 
 func RegisterDevRoutes(router *gin.Engine, db *gorm.DB) {
 	router.POST("/dev/jwtTest", func(c *gin.Context) {
@@ -34,6 +38,15 @@ func RegisterDevRoutes(router *gin.Engine, db *gorm.DB) {
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"hashedPassword": password})
+	})
+	router.POST("/dev/compare", func(c *gin.Context) {
+		var request ComparingRequest
+
+		if err := c.ShouldBindJSON(&request); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"is the same": hashing.CheckHashedString(request.Hash, request.Password)})
 	})
 
 }
