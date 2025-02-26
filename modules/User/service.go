@@ -168,6 +168,57 @@ func CheckAuth(c *gin.Context, db *gorm.DB) {
 	c.JSON(http.StatusOK, Success{Message: "Authenticated"})
 }
 
+type NewAccountRequest struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
+func CreateNewClaimAccount(c *gin.Context, db *gorm.DB) {
+	var newAccountData NewAccountRequest
+	if err := c.ShouldBindJSON(&newAccountData); err != nil {
+		c.JSON(http.StatusBadRequest, Error{Message: "Invalid Request Body"})
+		return
+	}
+
+	jwtData, err := auth.GetJWTPayloadFromHeader(c, db)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, Error{Message: "Unauthorized"})
+		return
+	}
+
+	if !IsUserAdmin(jwtData.UserId, db) {
+		c.JSON(http.StatusForbidden, Error{Message: "You are not allowed to perform this action"})
+		return
+	}
+	if !UsernameAlreadyInUse(newAccountData.Username, db) {
+		c.JSON(http.StatusBadRequest, Error{Message: "Username Already In Use"})
+		return
+	}
+
+	_, err = validation.IsValidPassword(newAccountData.Password)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, Error{Message: err.Error()})
+		return
+	}
+	newAccountData.Password, err = hashing.HashPassword(newAccountData.Password)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, Error{Message: "Internal server Error"})
+		return
+	}
+
+	userId, err := CreateNewUser(newAccountData, db)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, Error{Message: "Internal server Error"})
+		return
+	}
+
+	c.JSON(http.StatusOK, SuccessWithId{Message: "New Account Created", Id: userId})
+}
+
 type Success struct {
 	Message string `json:"message"`
+}
+type SuccessWithId struct {
+	Message string `json:"message"`
+	Id      string `json:"id"`
 }

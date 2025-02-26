@@ -18,6 +18,10 @@ func registerAuthRoutes(router *gin.Engine, db *gorm.DB) {
 		Claim(c, db)
 	})
 
+	router.POST("/auth/new", func(c *gin.Context) {
+		CreateNewClaimAccount(c, db)
+	})
+
 	router.GET("/auth/check", func(c *gin.Context) {
 		CheckAuth(c, db)
 	})

@@ -53,3 +53,34 @@ func MarkUserAsClaimed(userId string, claimUserData ClaimUser, db *gorm.DB) erro
 
 	return nil
 }
+
+func IsUserAdmin(userId string, db *gorm.DB) bool {
+	var count int64
+
+	result := db.Table("roles").Where("user_id = ?", userId).Where("role = 'admin'").Count(&count)
+
+	if result.Error != nil {
+		return false
+	}
+	return count > 0
+}
+
+func UsernameAlreadyInUse(username string, db *gorm.DB) bool {
+	var count int64
+
+	result := db.Table("users").Where("username = ?", username).Count(&count)
+
+	if result.Error != nil {
+		return false
+	}
+	return count > 0
+}
+
+func CreateNewUser(userData NewAccountRequest, db *gorm.DB) (string, error) {
+
+	query := db.Table("users").Create(&userData)
+	if query.Error != nil {
+		return "", query.Error
+	}
+
+}

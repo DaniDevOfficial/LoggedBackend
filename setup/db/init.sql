@@ -34,6 +34,26 @@ CREATE TABLE IF NOT EXISTS "refreshTokens" (
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
     );
 
+CREATE TABLE IF NOT EXISTS "userHasRoles" (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+        role VARCHAR(255) REFERENCES roles(role) ON DELETE CASCADE,
+    )
+
+CREATE TABLE IF NOT EXISTS roles (
+    role VARCHAR(255) PRIMARY KEY NOT NULL UNIQUE,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+    );
+
 -- Insert an admin user (unclaimed) with the password 'admin'
-INSERT INTO users (id, username, password, is_claimed)
-VALUES (gen_random_uuid(), 'admin', '$2a$10$AJGqGxn0Cj3wAFsLpl6jjeT.cD3ipzZXAvE5pLychFvDrhygt63mi', false);
+INSERT INTO roles (role)
+VALUES ("admin");
+
+WITH inserted_user AS (
+    INSERT INTO users (id, username, password, is_claimed)
+    VALUES (gen_random_uuid(), 'admin', '$2a$10$AJGqGxn0Cj3wAFsLpl6jjeT.cD3ipzZXAvE5pLychFvDrhygt63mi', false)
+    RETURNING id
+)
+
+INSERT INTO userHasRole (user_id, role)
+SELECT id, 'admin' FROM inserted_user;
