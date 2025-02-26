@@ -169,6 +169,7 @@ func CheckAuth(c *gin.Context, db *gorm.DB) {
 }
 
 type NewAccountRequest struct {
+	ID       string `json:"id" gorm:"primaryKey;type:uuid;default:gen_random_uuid()"`
 	Username string `json:"username" binding:"required"`
 	Password string `json:"password" binding:"required"`
 }
@@ -242,6 +243,64 @@ func DeleteAccount(c *gin.Context, db *gorm.DB) {
 	}
 
 	c.JSON(http.StatusOK, Success{Message: "Account Deleted"})
+}
+
+type IdRequest struct {
+	Id string `json:"id" binding:"required,uuid"`
+}
+
+func AddAdminRoleToUser(c *gin.Context, db *gorm.DB) {
+	var userToPromote IdRequest
+	if err := c.ShouldBindJSON(&userToPromote); err != nil {
+		c.JSON(http.StatusBadRequest, Error{Message: "Invalid Request Body"})
+		return
+	}
+
+	jwtData, err := auth.GetJWTPayloadFromHeader(c, db)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, Error{Message: "Unauthorized"})
+		return
+	}
+
+	if !IsUserAdmin(jwtData.UserId, db) {
+		c.JSON(http.StatusForbidden, Error{Message: "You are not allowed to perform this action"})
+		return
+	}
+
+	err = AddUserAdmin(userToPromote.Id, db)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, Error{Message: "Internal server Error"})
+		return
+	}
+
+	c.JSON(http.StatusOK, Success{Message: "Admin Role Added"})
+}
+
+func RemoveAdminRoleFromUser(c *gin.Context, db *gorm.DB) {
+	var userToPromote IdRequest
+	if err := c.ShouldBindJSON(&userToPromote); err != nil {
+		c.JSON(http.StatusBadRequest, Error{Message: "Invalid Request Body"})
+		return
+	}
+
+	jwtData, err := auth.GetJWTPayloadFromHeader(c, db)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, Error{Message: "Unauthorized"})
+		return
+	}
+
+	if !IsUserAdmin(jwtData.UserId, db) {
+		c.JSON(http.StatusForbidden, Error{Message: "You are not allowed to perform this action"})
+		return
+	}
+
+	err = RemoveUserAdmin(userToPromote.Id, db)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, Error{Message: "Internal server Error"})
+		return
+	}
+
+	c.JSON(http.StatusOK, Success{Message: "Admin Role Removed"})
 }
 
 type Success struct {
