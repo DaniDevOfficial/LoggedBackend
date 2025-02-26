@@ -18,8 +18,12 @@ func registerAuthRoutes(router *gin.Engine, db *gorm.DB) {
 		Claim(c, db)
 	})
 
-	router.POST("/auth/new", func(c *gin.Context) {
+	router.POST("/auth/account", func(c *gin.Context) {
 		CreateNewClaimAccount(c, db)
+	})
+
+	router.DELETE("/auth/account", func(c *gin.Context) {
+		DeleteAccount(c, db)
 	})
 
 	router.GET("/auth/check", func(c *gin.Context) {

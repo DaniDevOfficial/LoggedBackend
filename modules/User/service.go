@@ -215,6 +215,35 @@ func CreateNewClaimAccount(c *gin.Context, db *gorm.DB) {
 	c.JSON(http.StatusOK, SuccessWithId{Message: "New Account Created", Id: userId})
 }
 
+type DeleteRequest struct {
+	Id string `form:"id" binding:"required,uuid"`
+}
+
+func DeleteAccount(c *gin.Context, db *gorm.DB) {
+	var deleteRequest DeleteRequest
+	if err := c.ShouldBindQuery(&deleteRequest); err != nil {
+		c.JSON(http.StatusBadRequest, Error{Message: "Invalid Request Body"})
+	}
+
+	jwtData, err := auth.GetJWTPayloadFromHeader(c, db)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, Error{Message: "Unauthorized"})
+		return
+	}
+
+	if jwtData.UserId != deleteRequest.Id || !IsUserAdmin(jwtData.UserId, db) {
+		c.JSON(http.StatusForbidden, Error{Message: "You are not allowed to perform this action"})
+		return
+	}
+	err = DeleteAccountInDB(deleteRequest.Id, db)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, Error{Message: "Internal server Error"})
+		return
+	}
+
+	c.JSON(http.StatusOK, Success{Message: "Account Deleted"})
+}
+
 type Success struct {
 	Message string `json:"message"`
 }

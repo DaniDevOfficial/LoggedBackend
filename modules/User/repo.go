@@ -84,3 +84,8 @@ func CreateNewUser(userData NewAccountRequest, db *gorm.DB) (string, error) {
 	}
 
 }
+
+func DeleteAccountInDB(userId string, db *gorm.DB) error {
+	query := db.Table("users").Delete(&userId)
+	return query.Error
+}
