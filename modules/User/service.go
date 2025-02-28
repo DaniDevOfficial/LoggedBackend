@@ -10,7 +10,6 @@ import (
 	"loggedin/utility/jwt"
 	"loggedin/utility/validation"
 	"net/http"
-	"time"
 )
 
 func Login(c *gin.Context, db *gorm.DB) {
@@ -72,6 +71,10 @@ func Login(c *gin.Context, db *gorm.DB) {
 type ClaimUser struct {
 	IsClaimed bool   `json:"is_claimed"`
 	Password  string `json:"password"`
+}
+
+type IsUserAdminResponse struct {
+	IsAdmin bool `json:"isAdmin"`
 }
 
 func Claim(c *gin.Context, db *gorm.DB) {
@@ -156,16 +159,25 @@ func Claim(c *gin.Context, db *gorm.DB) {
 }
 
 func CheckAuth(c *gin.Context, db *gorm.DB) {
-	time.Sleep(2 * time.Second)
 
 	_, err := auth.GetJWTPayloadFromHeader(c, db)
 	if err != nil {
-		log.Println(err)
 		c.JSON(http.StatusUnauthorized, Error{Message: "Unauthorized to perform action please login to continue"})
 		return
 	}
 
 	c.JSON(http.StatusOK, Success{Message: "Authenticated"})
+}
+
+func CheckIfUserIsAdmin(c *gin.Context, db *gorm.DB) {
+
+	authToken, err := auth.GetJWTPayloadFromHeader(c, db)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, Error{Message: "Unauthorized to perform action please login to continue"})
+		return
+	}
+
+	c.JSON(http.StatusOK, IsUserAdminResponse{IsAdmin: IsUserAdmin(authToken.UserId, db)})
 }
 
 type NewAccountRequest struct {

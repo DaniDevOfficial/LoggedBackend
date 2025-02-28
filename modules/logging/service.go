@@ -22,7 +22,6 @@ func CreateLogEntry(c *gin.Context, db *gorm.DB) {
 	}
 	//TODO: Auth with maybe some api key, which can be created by system admins.
 
-	//TODO: If system is dev ignore the encoding
 	newLogEntry.Request = EncodePersonalInformation(newLogEntry.Request)
 
 	id, err := CreateLogEntryDB(newLogEntry, db)

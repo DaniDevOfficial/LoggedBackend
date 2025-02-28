@@ -35,6 +35,7 @@ func GetRefreshTokenFromHeader(c *gin.Context) (string, error) {
 //	(jwt.JWTPayload, error): Returns the decoded JWT payload if successful, otherwise returns an error.
 func GetJWTPayloadFromHeader(c *gin.Context, db *gorm.DB) (jwt.JWTPayload, error) {
 	jwtToken, err := GetJWTTokenFromHeader(c)
+
 	var jwtData jwt.JWTPayload
 	if err != nil {
 		jwtData, newJwtToken, err := CreateNewTokenWithRefreshToken(c, db)

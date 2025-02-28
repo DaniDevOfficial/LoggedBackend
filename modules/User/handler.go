@@ -29,11 +29,16 @@ func registerAuthRoutes(router *gin.Engine, db *gorm.DB) {
 	router.POST("/auth/roles/admin", func(c *gin.Context) {
 		AddAdminRoleToUser(c, db)
 	})
+
 	router.DELETE("/auth/roles/admin", func(c *gin.Context) {
 		RemoveAdminRoleFromUser(c, db)
 	})
 
 	router.GET("/auth/check", func(c *gin.Context) {
 		CheckAuth(c, db)
+	})
+
+	router.GET("/auth/admin", func(c *gin.Context) {
+		CheckIfUserIsAdmin(c, db)
 	})
 }
