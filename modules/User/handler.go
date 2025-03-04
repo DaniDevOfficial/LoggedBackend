@@ -7,6 +7,7 @@ import (
 
 func RegisterUserRoutes(router *gin.Engine, db *gorm.DB) {
 	registerAuthRoutes(router, db)
+	registerAdminOnlyRoutes(router, db)
 }
 
 func registerAuthRoutes(router *gin.Engine, db *gorm.DB) {
@@ -16,6 +17,22 @@ func registerAuthRoutes(router *gin.Engine, db *gorm.DB) {
 
 	router.POST("/auth/claim", func(c *gin.Context) {
 		Claim(c, db)
+	})
+
+	router.GET("/auth/check", func(c *gin.Context) {
+		CheckAuth(c, db)
+	})
+
+}
+
+func registerAdminOnlyRoutes(router *gin.Engine, db *gorm.DB) {
+
+	router.GET("/user/all", func(c *gin.Context) {
+		GetAllAccounts(c, db)
+	})
+
+	router.GET("/auth/admin", func(c *gin.Context) {
+		CheckIfUserIsAdmin(c, db)
 	})
 
 	router.POST("/auth/account", func(c *gin.Context) {
@@ -34,11 +51,4 @@ func registerAuthRoutes(router *gin.Engine, db *gorm.DB) {
 		RemoveAdminRoleFromUser(c, db)
 	})
 
-	router.GET("/auth/check", func(c *gin.Context) {
-		CheckAuth(c, db)
-	})
-
-	router.GET("/auth/admin", func(c *gin.Context) {
-		CheckIfUserIsAdmin(c, db)
-	})
 }

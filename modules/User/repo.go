@@ -58,7 +58,7 @@ func MarkUserAsClaimed(userId string, claimUserData ClaimUser, db *gorm.DB) erro
 func IsUserAdmin(userId string, db *gorm.DB) bool {
 	var count int64
 
-	result := db.Table("roles").
+	result := db.Table("userHasRoles").
 		Where("user_id = ?", userId).
 		Where("role = 'admin'").
 		Count(&count)
@@ -70,7 +70,7 @@ func IsUserAdmin(userId string, db *gorm.DB) bool {
 }
 
 func AddUserAdmin(userId string, db *gorm.DB) error {
-	result := db.Table("roles").
+	result := db.Table("userHasRoles").
 		Where("user_id = ?", userId).
 		Update("role", "admin")
 	if result.Error != nil {
@@ -85,7 +85,7 @@ func AddUserAdmin(userId string, db *gorm.DB) error {
 }
 
 func RemoveUserAdmin(userId string, db *gorm.DB) error {
-	result := db.Table("userHasRole").
+	result := db.Table("userHasRoles").
 		Where("user_id = ? AND role = ?", userId, "admin").
 		Delete(nil)
 
@@ -133,4 +133,16 @@ func DeleteAccountInDB(userId string, db *gorm.DB) error {
 	}
 
 	return result.Error
+}
+
+func GetAllAccountsFromDB(db *gorm.DB) ([]Account, error) {
+	var accounts []Account
+	result := db.Table("users").Find(&accounts)
+	if result.Error != nil {
+		return accounts, result.Error
+	}
+	if result.RowsAffected == 0 {
+		return accounts, NotFoundError
+	}
+	return accounts, nil
 }

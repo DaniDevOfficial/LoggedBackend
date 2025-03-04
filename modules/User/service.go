@@ -315,6 +315,38 @@ func RemoveAdminRoleFromUser(c *gin.Context, db *gorm.DB) {
 	c.JSON(http.StatusOK, Success{Message: "Admin Role Removed"})
 }
 
+type Account struct {
+	Id        string `json:"id"`
+	Username  string `json:"username"`
+	IsAdmin   bool   `json:"isAdmin"`
+	IsClaimed bool   `json:"isClaimed"`
+	CreatedAt string `json:"createdAt" binding:"date"`
+}
+
+func GetAllAccounts(c *gin.Context, db *gorm.DB) {
+	token, err := auth.GetJWTPayloadFromHeader(c, db)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, Error{Message: "Unauthorized"})
+		return
+	}
+
+	if !IsUserAdmin(token.UserId, db) {
+		c.JSON(http.StatusForbidden, Error{Message: "You are not allowed to perform this action"})
+		return
+	}
+	accounts, err := GetAllAccountsFromDB(db)
+	if err != nil {
+		if errors.Is(err, NotFoundError) {
+			c.JSON(http.StatusNotFound, Error{Message: "No Account found"})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, Error{Message: "Internal server Error"})
+		return
+	}
+
+	c.JSON(http.StatusOK, accounts)
+}
+
 type Success struct {
 	Message string `json:"message"`
 }
