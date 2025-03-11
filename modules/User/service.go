@@ -203,7 +203,7 @@ func CreateNewClaimAccount(c *gin.Context, db *gorm.DB) {
 		c.JSON(http.StatusForbidden, Error{Message: "You are not allowed to perform this action"})
 		return
 	}
-	if !UsernameAlreadyInUse(newAccountData.Username, db) {
+	if UsernameAlreadyInUse(newAccountData.Username, db) {
 		c.JSON(http.StatusBadRequest, Error{Message: "Username Already In Use"})
 		return
 	}
@@ -243,8 +243,10 @@ func DeleteAccount(c *gin.Context, db *gorm.DB) {
 		c.JSON(http.StatusUnauthorized, Error{Message: "Unauthorized"})
 		return
 	}
-
-	if jwtData.UserId != deleteRequest.Id || !IsUserAdmin(jwtData.UserId, db) {
+	if jwtData.UserId == deleteRequest.Id {
+		c.JSON(http.StatusBadRequest, Error{Message: "You are not allowed to delete your own account"})
+	}
+	if !IsUserAdmin(jwtData.UserId, db) {
 		c.JSON(http.StatusForbidden, Error{Message: "You are not allowed to perform this action"})
 		return
 	}
@@ -258,12 +260,16 @@ func DeleteAccount(c *gin.Context, db *gorm.DB) {
 }
 
 type IdRequest struct {
-	Id string `json:"id" binding:"required,uuid"`
+	Id string `json:"id" form:"id" binding:"required,uuid"`
+}
+
+type RoleChangeResponse struct {
+	HasRole bool `json:"hasRole"`
 }
 
 func AddAdminRoleToUser(c *gin.Context, db *gorm.DB) {
 	var userToPromote IdRequest
-	if err := c.ShouldBindJSON(&userToPromote); err != nil {
+	if err := c.ShouldBindQuery(&userToPromote); err != nil {
 		c.JSON(http.StatusBadRequest, Error{Message: "Invalid Request Body"})
 		return
 	}
@@ -285,12 +291,12 @@ func AddAdminRoleToUser(c *gin.Context, db *gorm.DB) {
 		return
 	}
 
-	c.JSON(http.StatusOK, Success{Message: "Admin Role Added"})
+	c.JSON(http.StatusOK, RoleChangeResponse{HasRole: true})
 }
 
 func RemoveAdminRoleFromUser(c *gin.Context, db *gorm.DB) {
 	var userToPromote IdRequest
-	if err := c.ShouldBindJSON(&userToPromote); err != nil {
+	if err := c.ShouldBindQuery(&userToPromote); err != nil {
 		c.JSON(http.StatusBadRequest, Error{Message: "Invalid Request Body"})
 		return
 	}
@@ -312,7 +318,7 @@ func RemoveAdminRoleFromUser(c *gin.Context, db *gorm.DB) {
 		return
 	}
 
-	c.JSON(http.StatusOK, Success{Message: "Admin Role Removed"})
+	c.JSON(http.StatusOK, RoleChangeResponse{HasRole: false})
 }
 
 type Account struct {

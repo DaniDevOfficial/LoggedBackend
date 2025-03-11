@@ -60,7 +60,7 @@ func IsUserAdmin(userId string, db *gorm.DB) bool {
 
 	result := db.Table("userHasRoles").
 		Where("user_id = ?", userId).
-		Where("role = 'admin'").
+		Where("role =  'admin'").
 		Count(&count)
 
 	if result.Error != nil {
@@ -69,10 +69,20 @@ func IsUserAdmin(userId string, db *gorm.DB) bool {
 	return count > 0
 }
 
+type AddRole struct {
+	UserId string `json:"user_id"`
+	Role   string `json:"role"`
+}
+
 func AddUserAdmin(userId string, db *gorm.DB) error {
+	addRole := AddRole{
+		UserId: userId,
+		Role:   "admin",
+	}
 	result := db.Table("userHasRoles").
 		Where("user_id = ?", userId).
-		Update("role", "admin")
+		Create(addRole)
+
 	if result.Error != nil {
 		return result.Error
 	}

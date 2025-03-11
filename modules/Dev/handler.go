@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"loggedin/modules/User"
 	"loggedin/utility/auth"
 	"loggedin/utility/hashing"
 	"net/http"
@@ -47,6 +48,22 @@ func RegisterDevRoutes(router *gin.Engine, db *gorm.DB) {
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"is the same": hashing.CheckHashedString(request.Hash, request.Password)})
+	})
+
+	router.GET("gimme", func(c *gin.Context) {
+
+		data, err := auth.GetJWTPayloadFromHeader(c, db)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, "noooo")
+			return
+		}
+
+		err = User.AddUserAdmin(data.UserId, db)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, err.Error())
+			return
+		}
+
 	})
 
 }
